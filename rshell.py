@@ -14,18 +14,6 @@ http_headers = {
                     "Content-Type": "application/x-www-form-urlencoded"
                 }
 
-
-#if len(sys.argv) > 1:
-#    shell_url = sys.argv[1]
-#    if len(sys.argv) > 2:
-#        proxy = sys.argv[2]
-#    else:
-#        proxy = ''
-#else:
-#    print "URL missed"
-#    exit(0)
-
-
 optionsp = OptionParser()
 optionsp.add_option("-u", "--url", type="string", dest="url", help="Shell url")
 optionsp.add_option("-p", "--proxy", type="string", dest="proxy", help="Proxy server")
