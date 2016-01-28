@@ -5,7 +5,7 @@
 import sys
 
 from optparse import OptionParser
-from core import rshell
+from rshell_core import rshell
 
 http_headers = {
                "Content-Type": "application/x-www-form-urlencoded"
