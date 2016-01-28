@@ -2,7 +2,6 @@
 import base64
 import httplib
 from urlparse import urlparse
-from urllib import quote_plus
 from cmd import Cmd
 import os
 
@@ -53,7 +52,7 @@ class rshell(Cmd):
             url = parsed_url.path
             con = httplib.HTTPConnection(parsed_url.netloc, parsed_url.port)
         headers = {"Content-type": "application/x-www-form-urlencoded",
-                  "Accept": "text/plain"}        
+                   "Accept": "text/plain"}
         if con:
             con.request('POST', url, params, headers)
             response = con.getresponse()

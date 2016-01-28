@@ -6,10 +6,6 @@ import sys
 from optparse import OptionParser
 from rshell_core import rshell
 
-http_headers = {
-               "Content-Type": "application/x-www-form-urlencoded"
-               }
-
 optionsp = OptionParser()
 optionsp.add_option("-u", "--url", type="string", dest="url", help="Shell url")
 optionsp.add_option("-p", "--proxy", type="string",
