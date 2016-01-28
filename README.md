@@ -1,2 +1,2 @@
 # rshell
-Remote web shell
+Remote command via web shell
