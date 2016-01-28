@@ -26,7 +26,7 @@ def main():
     a = rshell(shell_url, proxy)
     a.prompt = 'rshell:~ '
     if options.s:
-        a.do_print_payload()
+        a.print_payload()
     else:
         a.cmdloop()
 
