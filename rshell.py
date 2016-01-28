@@ -50,7 +50,6 @@ class rshell(Cmd):
 
     def make_request(self, fullurl):
         parsed_url = urlparse(fullurl)
-        #name_ip_port_proto = parsed_url['netloc']
         url = ''
         con = None
         if self.proxy:
@@ -58,7 +57,6 @@ class rshell(Cmd):
             con = httplib.HTTPConnection(ip, int(port))
             url = fullurl
         else:
-            #url = parsed_url['scheme'] + '://' + parsed_url['netloc']
             url = parsed_url.path + '?' + parsed_url.query
             con = httplib.HTTPConnection(parsed_url.netloc, parsed_url.port)
         if con:
