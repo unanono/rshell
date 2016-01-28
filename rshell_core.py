@@ -96,11 +96,13 @@ class rshell(Cmd):
             print "Error"
 
     def do_upload(self, line):
-        files = line.split()
-        cmd = "echo base64_encode(file_get_contents('{0}'));".format(files[0])
+        (filename, destination) = line.split()
+        f = file(filename)
+        fname = os.path.basename(filename)
+        data = base64.encodestring(f.read()).replace("\n", "")
+        cmd = "file_put_contents('{0}/{1}',base64_decode('{2}'));".format(destination,fname, data)
         (code, data) = self.dorequest(cmd)
         if code == 200:
-            f = file(os.path.basename(files[0]), "w")
-            f.write(base64.decodestring(data))
+            print data
         else:
             print "Error"
