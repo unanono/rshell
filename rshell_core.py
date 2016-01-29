@@ -122,3 +122,52 @@ class rshell(Cmd):
         filename = "{0}.tar.gz".format(os.path.basename(line))
         self.do_compress_folder("{0} {1}".format(line, filename))
         self.do_download("{0} {1}".format(filename, filename))
+
+    def do_getsysinfo(self, line):
+        print "=" * 80
+        print "User name:"
+        print "-" * 80        
+        cmd = "whoami"
+        self.default(cmd)
+
+        print "=" * 80
+        print "User id:"
+        print "-" * 80        
+        cmd = "id"
+        self.default(cmd)
+        
+        print "=" * 80
+        print "/etc/passwd:"
+        print "-" * 80        
+        cmd = "cat /etc/passwd"
+        self.default(cmd)
+        
+        print "=" * 80
+        print "/etc/issue:"
+        print "-" * 80        
+        cmd = "cat /etc/issue"
+        self.default(cmd)
+
+        print "=" * 80
+        print "System information (uname):"
+        print "-" * 80
+        cmd = "uname -a"
+        self.default(cmd)
+        
+        print "=" * 80
+        print "Network iterfaces:"
+        print "-" * 80        
+        cmd = "ifconfig -a"
+        self.default(cmd)
+        
+        print "=" * 80
+        print "/etc/resolv.conf:"
+        print "-" * 80
+        cmd = "cat /etc/resolv.conf"
+        self.default(cmd)
+        
+        print "=" * 80
+        print "Hosts ips information:"
+        print "-" * 80
+        cmd = "cat /etc/hosts"
+        self.default(cmd)
