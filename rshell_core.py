@@ -290,6 +290,7 @@ class rshell(Cmd):
             for ip, info in self.ips.items():
                 if not ip.startswith("127."):
                     cmd += "{0}\{1} ".format(ip, info["mask_bits"])
+            #cmd = "nmap 127.0.0.1"
             (code, response) = self.dorequest("system('{0}');".format(cmd))
             if code == 200:
                 scans = response.split("Nmap scan report for ")[1:]
@@ -309,9 +310,17 @@ class rshell(Cmd):
 
     def do_print_hosts(self, line):
         if line:
-            print self.hosts[line.split()[0]]
+            host = self.hosts[line.split()[0]]
+            print "Host name: {0}".format(host[0])
+            for port in host[1]:
+                print port
         else:
-            print self.hosts
+            for host, info in self.hosts.items():
+                print " "
+                print "IP: {0}".format(host)
+                print "Host name: {0}".format(info[0])
+                for port in info[1]:
+                    print port
 
 #    def do_cd(self, line):
 #        cmd = "cd ../; pwd"
