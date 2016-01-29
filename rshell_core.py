@@ -73,6 +73,8 @@ class rshell(Cmd):
         print "check_files: check existence of a list of files (pillage.lst)"
         print "get_local_ips: get local ips and subnet mask bits"
         print "print_local_ips: print local ips finded"
+        print "find_hosts: find hosts in local network using nmap"
+        print "print_hosts [ip]: print finded hosts info"
         print "Or write a command to send to the server shell"
         return None
 
