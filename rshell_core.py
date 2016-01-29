@@ -98,7 +98,14 @@ class rshell(Cmd):
         cmd = "phpinfo();"
         (code, data) = self.dorequest(cmd)
         if code == 200:
-            print data
+            phpinfofilename = "phpinfo.html"
+            f = file(phpinfofilename, "w")
+            f.write(data)
+            f.close()
+            resp = raw_input("Open in default browser? (y/n): ")
+            if (resp == "y"):
+                import webbrowser
+                webbrowser.open(phpinfofilename)
         else:
             print "Error"
         return None
