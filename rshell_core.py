@@ -168,24 +168,17 @@ class rshell(Cmd):
 
     def do_getswversion(self, line):
         #Print some software versions
+        cmds = {"gcc": "gcc --version",
+                "mysql": "mysql --version",
+                "perl": "perl -v Returns",
+                "ruby": "ruby -v Returns",
+                "python": "python --version",
+                }
         print "=" * 80
         print "Software versions:"
-        print "-" * 80
-        cmd = "gcc --version"
-        self.default(cmd)
-        print "-" * 80
-        cmd = "mysql --version"
-        self.default(cmd)
-        print "-" * 80
-        cmd = "perl -v Returns"
-        self.default(cmd)
-        print "-" * 80
-        cmd = "ruby -v Returns"
-        self.default(cmd)
-        print "-" * 80
-        cmd = "python --version"
-        self.default(cmd)
-        print "-" * 80
+        for k, val in cmds.items():
+            print "-" * 80
+            self.default(val)
         return None
 
     def file_exists(self, filename):
