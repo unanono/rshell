@@ -94,9 +94,13 @@ class rshell(Cmd):
     def do_phpinfo(self, line):
         #This is the default command method
         #system function is called with the command to execute
-        s = "phpinfo();"
         #doing the request to the server
-        self.dorequest(s)
+        cmd = "phpinfo();"
+        (code, data) = self.dorequest(cmd)
+        if code == 200:
+            print data
+        else:
+            print "Error"
         return None
 
     def print_payload(self):
@@ -193,10 +197,13 @@ class rshell(Cmd):
     def do_check_files(self, line):
         filelist = file("pillage.lst")
         for filename in filelist:
-            #Check filename, [:-1] to remove eol
+            #Check filename, [:-1] to remove eol from readline
             self.file_exists(filename[:-1])
         filelist.close()
         return None
+
+    def do_get_neighbors():
+        pass
 
 #    def do_cd(self, line):
 #        cmd = "cd ../; pwd"
