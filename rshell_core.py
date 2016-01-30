@@ -297,8 +297,12 @@ class rshell(Cmd):
                 for host in scans:
                     hs = host.split("\n\n")[0]
                     lhs = hs.split("\n")
-                    hostname = lhs[0].split()[0]
-                    ip = lhs[0].split()[1][1:-1]
+                    if len(lhs[0].split()) > 1:
+                        hostname = lhs[0].split()[0]
+                        ip = lhs[0].split()[1][1:-1]
+                    else:
+                        ip = lhs[0]
+                        hostname = ""
                     ports = lhs[4:]
                     self.hosts[ip] = [hostname, ports]
             else:
