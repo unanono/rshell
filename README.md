@@ -1,6 +1,6 @@
 
 # rshell
-## Remote command line interpreter via web shell
+## Interactive command line interpreter using a web shell
 
 ###Usage:
 	python rshell.py -u shell_url [-p proxy:port]
