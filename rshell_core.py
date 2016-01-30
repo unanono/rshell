@@ -289,7 +289,7 @@ class rshell(Cmd):
         if self.ips:
             for ip, info in self.ips.items():
                 if not ip.startswith("127."):
-                    cmd += "{0}\{1} ".format(ip, info["mask_bits"])
+                    cmd += "{0}/{1} ".format(ip, info["mask_bits"])
             #cmd = "nmap 127.0.0.1"
             (code, response) = self.dorequest("system('{0}');".format(cmd))
             if code == 200:
