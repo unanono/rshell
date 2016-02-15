@@ -18,12 +18,11 @@ def do_request(url, data, proxy):
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-    if data:
+    try:
         f = urllib2.urlopen(url, data, context=context)
-    else:
-        f = urllib2.urlopen(url, context=context)
-    
-    return f.read()
+        return f.read()
+    except:
+        return None
 
 
 def alternative_proxy_test():

