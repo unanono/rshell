@@ -32,7 +32,9 @@ def do_request_hlib(url, data, proxy):
         (ip, port) = proxy.split(':')
         #con = httplib.HTTPConnection(parsed_url.netloc, parsed_url.port)
         if url.find("https:/") >= 0:
-            con = httplib.HTTPSConnection(ip, int(port), context=ssl._create_unverified_context())
+            con = httplib.HTTPSConnection(ip,
+                                          int(port),
+                                          context=ssl._create_unverified_context())
             con.set_tunnel(parsed_url.netloc, parsed_url.port)
         else:
             con = httplib.HTTPConnection(ip, int(port))

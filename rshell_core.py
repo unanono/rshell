@@ -1,4 +1,3 @@
-
 import base64
 from cmd import Cmd
 import os
@@ -17,6 +16,7 @@ def extract_ip_mask_ifconfig(addr_line):
     if mask and len(mask[0].split(":")) > 1:
         mask = mask[0].split(":")[1]
         import math
+
         octets = mask.split(".")
         for o in octets:
             mo = int(o)
@@ -45,7 +45,6 @@ def is_private_ip(ip):
 
 
 class rshell(Cmd):
-
     pwd = ""
     old_pwd = ""
     ips = {}
@@ -77,7 +76,8 @@ class rshell(Cmd):
         print " " * 15, "print_local_ips: print local ips finded\n"
         print " " * 15, "find_hosts: find hosts in local network using nmap\n"
         print " " * 15, "print_hosts [ip]: print finded hosts info\n"
-        print " " * 15, "start_proxy: starts a local proxy, set your browser proxy settings and surf the internal network\n"
+        print " " * 15, "start_proxy: starts a local proxy, set your browser " \
+                        "proxy settings and surf the internal network\n"
         print " " * 15, "stop_proxy: stops the proxy server\n"
         print " " * 15, "Or write a command to send to the server shell\n"
 
@@ -168,6 +168,7 @@ class rshell(Cmd):
             resp = raw_input("Open in default browser? (y/n): ")
             if resp == "y":
                 import webbrowser
+
                 webbrowser.open(phpinfofilename)
         else:
             print "Error"
@@ -208,8 +209,8 @@ class rshell(Cmd):
         return None
 
     def do_compress_folder(self, line):
-        (folder, archivo) = line.split()
-        cmd = "tar -czf {0} {1}".format(archivo, folder)
+        (folder, local_file) = line.split()
+        cmd = "tar -czf {0} {1}".format(local_file, folder)
         self.default(cmd)
         return None
 
@@ -224,7 +225,7 @@ class rshell(Cmd):
     def do_getsysinfo(self, line):
         #Print user and system information
         cmds = {"User name:": "whoami",
-                "User id:": "id",
+                "User id and groups:": "id",
                 "/etc/passwd:": "cat /etc/passwd",
                 "/etc/issue:": "cat /etc/issue",
                 "Host name:": "hostname -f",
@@ -232,8 +233,8 @@ class rshell(Cmd):
                 "Network iterfaces:": "ifconfig -a",
                 "/etc/resolv.conf:": "cat /etc/resolv.conf",
                 "Hosts ips information /etc/hosts:": "cat /etc/hosts",
-                "Open ports": "netstat -ant",
-                }
+                "Open ports and connections": "netstat -ant",
+        }
         for k, val in cmds.items():
             print "=" * self.width
             print k
@@ -248,7 +249,7 @@ class rshell(Cmd):
                 "perl": "perl -v Returns",
                 "ruby": "ruby -v Returns",
                 "python": "python --version",
-                }
+        }
         print "=" * self.width
         print "Software versions:"
         for k, val in cmds.items():

@@ -3,7 +3,6 @@ from urlparse import urlparse
 from base64 import encodestring
 import request
 import os
-from thread import start_new_thread
 from multiprocessing import Process
 import asyncore
 
