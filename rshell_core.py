@@ -77,7 +77,7 @@ class rshell(Cmd):
         print " " * 15, "print_local_ips: print local ips finded\n"
         print " " * 15, "find_hosts: find hosts in local network using nmap\n"
         print " " * 15, "print_hosts [ip]: print finded hosts info\n"
-        print " " * 15, "start_proxy: starts a proxy on localhost:8888, set that in your browser and surf the internal network\n"
+        print " " * 15, "start_proxy: starts a local proxy, set your browser proxy settings and surf the internal network\n"
         print " " * 15, "stop_proxy: stops the proxy server\n"
         print " " * 15, "Or write a command to send to the server shell\n"
 
@@ -343,18 +343,22 @@ class rshell(Cmd):
     def do_start_proxy(self, line):
         """Start a proxy server on the port
         """
-        self.proxy_object = proxy.Proxy()
-        print "Starting proxy on {0}:{1}".format(self.proxy_object.port,
-                                                 self.proxy_object.host)
-        self.proxy_object.set_shell_url(self.shell_url)
-        self.proxy_object.start()
-        print ""
+        if not self.proxy_object:
+            self.proxy_object = proxy.Proxy()
+            print "Starting proxy on {1}:{0}".format(self.proxy_object.port,
+                                                     self.proxy_object.host)
+            self.proxy_object.set_shell_url(self.shell_url)
+            self.proxy_object.start()
+            print ""
+        else:
+            print "Proxy already started"
         return None
 
     def do_stop_proxy(self, line):
         if self.proxy_object:
             self.proxy_object.terminate()
             self.proxy_object.join()
+            self.proxy_object = None
 
     def do_set_password(self, line):
         a = sha512(line)
