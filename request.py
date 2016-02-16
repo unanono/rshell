@@ -8,7 +8,6 @@ import httplib
 
 def do_request(url, data, proxy):
     if proxy:
-        print url, data, proxy
         proxy_handler = urllib2.ProxyHandler({'https': '{0}'.format(proxy)})
         opener = urllib2.build_opener(proxy_handler)
         urllib2.install_opener(opener)
@@ -17,11 +16,14 @@ def do_request(url, data, proxy):
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-    try:
+#    try:
+    if data:
         f = urllib2.urlopen(url, data, context=context)
-        return f.read()
-    except:
-        return None
+    else:
+        f = urllib2.urlopen(url, context=context)
+    return f.read()
+#    except:
+#        return None
 
 
 def do_request_hlib(url, data, proxy):

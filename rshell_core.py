@@ -344,8 +344,11 @@ class rshell(Cmd):
         """Start a proxy server on the port
         """
         self.proxy_object = proxy.Proxy()
+        print "Starting proxy on {0}:{1}".format(self.proxy_object.port,
+                                                 self.proxy_object.host)
         self.proxy_object.set_shell_url(self.shell_url)
         self.proxy_object.start()
+        print ""
         return None
 
     def do_stop_proxy(self, line):
