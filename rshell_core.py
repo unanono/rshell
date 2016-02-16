@@ -22,7 +22,7 @@ def extract_ip_mask_ifconfig(addr_line):
             mo = int(o)
             if mo > 0:
                 bits += int(math.log(mo, 2)) + 1
-    return (ip, bits)
+    return ip, bits
 
 
 def is_private_ip(ip):
@@ -33,7 +33,7 @@ def is_private_ip(ip):
         o2 = int(octets[1])
         if o1 == 10:
             f = True
-        elif o1 == 172 and (o2 >= 16 and o2 <= 31):
+        elif o1 == 172 and (16 <= o2 <= 31):
             f = True
         elif o1 == 192 and o2 == 168:
             f = True
@@ -57,7 +57,7 @@ class rshell(Cmd):
         self.shell_url = shell_url
         self.proxy = proxy
 
-    def log_data(cmd, data):
+    def log_data(self, cmd, data):
         f = open(cmd.split()[0], "w")
         f.write(data)
         f.close()
@@ -161,15 +161,15 @@ class rshell(Cmd):
         cmd = "phpinfo();"
         (code, data) = self.dorequest(cmd)
         if code == 200:
-            phpinfofilename = "phpinfo.html"
-            f = file(phpinfofilename, "w")
+            phpinfo_filename = "phpinfo.html"
+            f = file(phpinfo_filename, "w")
             f.write(data)
             f.close()
             resp = raw_input("Open in default browser? (y/n): ")
             if resp == "y":
                 import webbrowser
 
-                webbrowser.open(phpinfofilename)
+                webbrowser.open(phpinfo_filename)
         else:
             print "Error"
         return None
@@ -234,7 +234,7 @@ class rshell(Cmd):
                 "/etc/resolv.conf:": "cat /etc/resolv.conf",
                 "Hosts ips information /etc/hosts:": "cat /etc/hosts",
                 "Open ports and connections": "netstat -ant",
-        }
+                }
         for k, val in cmds.items():
             print "=" * self.width
             print k
@@ -249,7 +249,7 @@ class rshell(Cmd):
                 "perl": "perl -v Returns",
                 "ruby": "ruby -v Returns",
                 "python": "python --version",
-        }
+                }
         print "=" * self.width
         print "Software versions:"
         for k, val in cmds.items():
