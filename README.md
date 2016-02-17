@@ -51,60 +51,62 @@
 	* python rshell.py -u http://127.0.0.1/shell.php -p proxy:port
 
 ###Functionality
- - check_files 
-        Check existence of some files extracted from
-        pillage.lst from pwnwiki (https://github.com/pwnwiki)
-        usage: check_files
- - compress_folder 
-        Compress a folder in the the server
-        usage: dwfolder compressed_file_name
- - download 
-        Download a file from the server
-        usage: download remote_path/remote_file local_path/local_file
- - dwfolder 
-        Compress and download a entire folder from the server
-        usage: dwfolder folder_path
- - exit 
-        This is the exit command
- - find_hosts 
-        Find hosts on local network
-        usage: find_hosts
- - get_local_ips 
-        Get ips assigned to the local interfaces
-        usage: get_local_ips
- - get_os 
-        Get information about the operating system using php
-        usage: get_os
- - getswversion 
-        Print some software versions
-        usage: getswversion
- - getsysinfo 
-        Print user and system information
-        usage: getsysinfo
- - help 
-        This command show the list of commands
- - payload 
-        Print the payload to write in an executable file in the server
- - phpinfo 
-        Extract the phpinfo result and open it in a web browser
- - print_hosts 
-        Print the hosts finded whith the command find_hosts
-        usage: print_hosts
- - print_local_ips 
-        Print local ips
-        usage: print_local_ips
- - quit 
-        This is the exit command
- - set_password None
- - shell 
-        This method execute the command locally
- - sql_connect None
- - start_proxy 
-        Start a local http proxy server to surf the internal network
-        usage: start_proxy
- - stop_proxy 
-        Stop the proxy server
-        usage: stop_proxy
- - upload 
-        Upload a file to the server
-        usage: upload local_path/local_file remote_path/remote_file
+	 - check_files 
+        	Check existence of some files extracted from
+	        pillage.lst from pwnwiki (https://github.com/pwnwiki)
+        	usage: check_files
+	 - compress_folder 
+        	Compress a folder in the the server
+	        usage: dwfolder compressed_file_name
+	 - download 
+        	Download a file from the server
+	        usage: download remote_path/remote_file local_path/local_file
+	 - dwfolder 
+        	Compress and download a entire folder from the server
+	        usage: dwfolder folder_path
+	 - exit 
+        	This is the exit command
+	 - find_hosts 
+        	Find hosts on local network
+	        usage: find_hosts
+	 - get_local_ips 
+        	Get ips assigned to the local interfaces
+	        usage: get_local_ips
+	 - get_os 
+        	Get information about the operating system using php
+	        usage: get_os
+	 - getswversion 
+        	Print some software versions
+	        usage: getswversion
+	 - getsysinfo 
+        	Print user and system information
+	        usage: getsysinfo
+	 - help 
+        	This command show the list of commands
+	 - payload 
+        	Print the payload to write in an executable file in the server
+	 - phpinfo 
+        	Extract the phpinfo result and open it in a web browser
+	 - print_hosts 
+        	Print the hosts finded whith the command find_hosts
+	        usage: print_hosts
+	 - print_local_ips 
+        	Print local ips
+	        usage: print_local_ips
+	 - quit 
+        	This is the exit command
+	 - set_password
+
+	 - shell 
+        	This method execute the command locally
+	 - sql_connect
+
+	 - start_proxy 
+        	Start a local http proxy server to surf the internal network
+	        usage: start_proxy
+	 - stop_proxy 
+        	Stop the proxy server
+	        usage: stop_proxy
+	 - upload 
+        	Upload a file to the server
+	        usage: upload local_path/local_file remote_path/remote_file
