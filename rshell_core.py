@@ -369,10 +369,14 @@ class rshell(Cmd):
             self.proxy_object = None
 
     def do_set_password(self, line):
+        """
+        Set shell password"""
         a = sha512(line)
         print a.hexdigest()
 
     def do_sql_connect(self, line):
+        """
+        MySQL Connection"""
         print line
 
     def do_get_os(self, line):
