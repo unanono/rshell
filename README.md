@@ -103,6 +103,7 @@
 
 	 - start_proxy 
         	Start a local http proxy server to surf the internal network
+		Or you can use it with sqlmap (./sqlmap.py -u "http://192.168.32.15/cat.php?id=1" --proxy=http://127.0.0.1:8888 --current-user)
 	        usage: start_proxy
 	 - stop_proxy 
         	Stop the proxy server

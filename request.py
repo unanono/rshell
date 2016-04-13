@@ -4,7 +4,7 @@ from urlparse import urlparse
 import httplib
 
 
-#ssl.create_default_context()
+# ssl.create_default_context()
 
 def do_request(url, data, proxy):
     if proxy:

