@@ -8,8 +8,6 @@ import proxy
 from utils import is_private_ip, extract_ip_mask_ifconfig
 
 
-
-
 class rshell(Cmd):
     pwd = ""
     old_pwd = ""

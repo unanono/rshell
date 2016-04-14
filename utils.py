@@ -1,3 +1,5 @@
+import re
+
 
 def extract_ip_mask_ifconfig(addr_line):
     ip = re.findall(r"inet addr:\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}", addr_line)
